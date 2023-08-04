@@ -68,7 +68,7 @@ function App() {
           <tbody>
             {allAddresses.map( address => {
               return (
-                <tr>
+                <tr key={address.publicAddress}>
                   <td> {address.publicAddress} </td>
                   <td> {address.privateKey} </td>
                 </tr>

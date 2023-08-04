@@ -43,7 +43,7 @@ function Wallet({ address, setAddress, balance, setBalance, allAddresses }) {
           <option value="null">Choose one...</option>
           {allAddresses.map( address => {
             return (
-              <option value={address.publicAddress}>{address.publicAddress} </option>
+              <option value={address.publicAddress} key={address.publicAddress} >{address.publicAddress} </option>
             )
           })}
         </select>

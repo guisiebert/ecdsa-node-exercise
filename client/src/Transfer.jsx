@@ -3,6 +3,7 @@ import server from "./server";
 import * as secp from 'ethereum-cryptography/secp256k1'
 import {toHex} from 'ethereum-cryptography/utils'
 import {keccak256} from "ethereum-cryptography/keccak"
+import { utf8ToBytes } from "ethereum-cryptography/utils.js";
 
 
 
@@ -11,36 +12,31 @@ function Transfer({ address, setBalance, privateKey, setPrivateKey}) {
   const [recipient, setRecipient] = useState("");
   const [loggedAddress, setloggedAddress] = useState("")
 
-  async function fetchBalance(address) {
-    setloggedAddress(address)
-
-    if (address) {
-      const addressData = await server.get(`balance/${address}`);
-      console.log(addressData)
-
-      const { data: { balance },} = await server.get(`balance/${address}`);
-      setBalance(balance);
-    } else {
-      setBalance(0);
-    }
-  }
-
-
+  
   async function onPrivChange(evt) {    
     const input = evt.target.value;
     if (input.length != 64) {
       setPrivateKey(input);
       setloggedAddress("Invalid Private Key")
     } else {
-        setPrivateKey(input);
-        const publicKey = secp.getPublicKey(input)
-        const publicAddress = toHex(keccak256(publicKey.slice(1)).slice(-20))
-        setloggedAddress(publicAddress)
-        fetchBalance(publicAddress)        
+      setPrivateKey(input);
+      const publicKey = secp.getPublicKey(input)
+      const publicAddress = toHex(keccak256(publicKey.slice(1)).slice(-20))
+      setloggedAddress(publicAddress)       
     }
   }
-
+  
   const setValue = (setter) => (evt) => setter(evt.target.value);
+  
+  async function signTransaction() {
+    const message = "who care what the message is man"
+    const messageHash = keccak256(utf8ToBytes(message))
+    const signature = await secp.sign(messageHash, privateKey, { recovered: true })
+    signature.push(messageHash)
+    console.log(signature)
+
+    return signature
+  }
 
   async function transfer(evt) {
     evt.preventDefault();
@@ -52,6 +48,7 @@ function Transfer({ address, setBalance, privateKey, setPrivateKey}) {
         sender: loggedAddress,
         amount: parseInt(sendAmount),
         recipient,
+        signature: await signTransaction(),
       });
       setBalance(balance);
     } catch (ex) {
