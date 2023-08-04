@@ -1,6 +1,6 @@
 import { useState } from "react";
 import server from "./server";
-import * as secp from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1';
 import {toHex} from 'ethereum-cryptography/utils'
 import {keccak256} from "ethereum-cryptography/keccak"
 import { utf8ToBytes } from "ethereum-cryptography/utils.js";
@@ -11,7 +11,6 @@ function Transfer({ address, setBalance, privateKey, setPrivateKey}) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
   const [loggedAddress, setloggedAddress] = useState("")
-
   
   async function onPrivChange(evt) {    
     const input = evt.target.value;
@@ -20,7 +19,7 @@ function Transfer({ address, setBalance, privateKey, setPrivateKey}) {
       setloggedAddress("Invalid Private Key")
     } else {
       setPrivateKey(input);
-      const publicKey = secp.getPublicKey(input)
+      const publicKey = secp256k1.getPublicKey(input)
       const publicAddress = toHex(keccak256(publicKey.slice(1)).slice(-20))
       setloggedAddress(publicAddress)       
     }
@@ -29,33 +28,55 @@ function Transfer({ address, setBalance, privateKey, setPrivateKey}) {
   const setValue = (setter) => (evt) => setter(evt.target.value);
   
   async function signTransaction() {
+    let privKey = privateKey // hex string
     const message = "who care what the message is man"
-    const messageHash = keccak256(utf8ToBytes(message))
-    const signature = await secp.sign(messageHash, privateKey, { recovered: true })
-    signature.push(messageHash)
-    console.log(signature)
+    const messageHash =  toHex(keccak256(utf8ToBytes(message))) // hex string
+    const publicKey =  toHex(secp256k1.getPublicKey(privKey)) // hex string
+    const signature =  toHex(secp256k1.sign(messageHash, privKey))
 
-    return signature
+    const signatureObjecto = {
+      // signature: JSON.parse(JSON.stringify(signature, (key, value) => typeof value === 'bigint' ? value.toString() : value)),
+      // signature: signature,
+      messageHash,
+      publicKey
+    }
+
+    
+    return signatureObjecto
   }
-
+  
   async function transfer(evt) {
     evt.preventDefault();
-
+    
+    
     try {
-      const {
-        data: { balance },
-      } = await server.post(`send`, {
+      // const signature = await signTransaction()
+      // console.log(signature)
+
+      const { data: { balance }, } = await server.post(`send`, {
         sender: loggedAddress,
         amount: parseInt(sendAmount),
         recipient,
-        signature: await signTransaction(),
+
+        // signature: "oi"
+        // signature: signature,
+
+        // signature: JSON.parse(JSON.stringify(signature.signature, (key, value) => typeof value === 'bigint' ? value.toString() : value)),
+        
+        // messageHash: signature.messageHash,
+        // publicKey: signature.publicKey
+        // signature: signTransaction(),
       });
+
       setBalance(balance);
+
     } catch (ex) {
-      alert(ex.response.data.message);
+      console.log('ERRO')
+      alert(await ex.response.data.message || "Deu ruim");
     }
   }
 
+  
   return (
     <form className="container transfer" onSubmit={transfer}>
       <h1>Send Transaction</h1>

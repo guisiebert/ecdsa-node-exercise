@@ -1,11 +1,12 @@
-const secp = require('ethereum-cryptography/secp256k1')
-const { toHex } = require('ethereum-cryptography/utils')
-const { keccak256 } = require("ethereum-cryptography/keccak");
+const { secp256k1 } = require('ethereum-cryptography/secp256k1');
+const { toHex, hexToBytes } = require('ethereum-cryptography/utils');
+const { keccak256 } = require('ethereum-cryptography/keccak');
+
 
 function generateWallet() {
 
-    const privateKey = secp.utils.randomPrivateKey();
-    const publicKey = secp.getPublicKey(privateKey)
+    const privateKey = secp256k1.utils.randomPrivateKey();
+    const publicKey = secp256k1.getPublicKey(privateKey)
     const publicAddress = keccak256(publicKey.slice(1)).slice(-20)
 
     return {

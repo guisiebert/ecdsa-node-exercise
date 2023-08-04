@@ -1,23 +1,12 @@
-const secp = require('ethereum-cryptography/secp256k1')
-const { keccak256 } = require("ethereum-cryptography/keccak");
-const { utf8ToBytes, toHex } = require("ethereum-cryptography/utils.js");
+const { secp256k1 } = require('ethereum-cryptography/secp256k1');
+const { toHex, hexToBytes, utf8ToBytes } = require('ethereum-cryptography/utils');
+const { keccak256 } = require('ethereum-cryptography/keccak');
 
 
-async function handleSignature(signedObject) {
-    const signature = signedObject[0]
-    const recoveryBit = signedObject[1]
-    const hashedMsg = signedObject[2]
-    const publicKey = secp.recoverPublicKey(
-        hashedMsg, 
-        signature, 
-        recoveryBit
-    )
-
-    console.log(publicKey)
-    // let publicAddress = ""
-
-    // // console.log(publicKey)
-    // return publicKey
+async function handleSignature({signature, messageHash, publicKey}) {
+    
+    // const isSigned = secp256k1.verify(signature, messageHash, publicKey)
+    // console.log(signature)
 } 
 
 module.exports = {handleSignature}

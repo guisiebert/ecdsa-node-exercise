@@ -1,6 +1,6 @@
-const secp = require('ethereum-cryptography/secp256k1')
-const { toHex } = require('ethereum-cryptography/utils')
-const { keccak256 } = require("ethereum-cryptography/keccak");
+const { secp256k1 } = require('ethereum-cryptography/secp256k1');
+const { toHex, hexToBytes } = require('ethereum-cryptography/utils');
+const { keccak256 } = require('ethereum-cryptography/keccak');
 
 const {generateWallet} = require('./scripts/generate')
 const {handleSignature} = require('./scripts/handleSignature')
@@ -14,9 +14,9 @@ app.use(cors());
 app.use(express.json());
 
 const balances = {
-  "a037c81dcf353d37ede4e2c3fd8002b93b74fd91": 100,
-  "4e07122ea8847e2be4e8a19d0096b0fb12ade813": 50,
-  "2c1cd8ebf1bc3cdc8d837871a0ceef4e4e2ca70e": 75,
+  "fdc8bfb4c60c49cff68d4992533adfa483a2b0a7": 100,
+  "c0918ec7cd89e4c6e3fa74cf84828456738f67e8": 50,
+  "450c8409847cde546713ed557fc45dce8527fa9e": 75,
 };
 
 app.get("/balance/:address", (req, res) => {
@@ -31,11 +31,10 @@ app.get('/new-wallet', (req, res) => {
 });
 
 app.post("/send", (req, res) => {
-  // TO-DO: get a signature from the client-side application
-  // recover the public address from the signature
+  const { sender, recipient, amount, signature } = req.body;
+  // handleSignature(signature)
 
-  const { sender, recipient, amount, signature, } = req.body;
-  handleSignature(signature)
+
 
   // 1. Send a signature into this route
   // 2. Find out the sender from the signature
