@@ -30,20 +30,22 @@ app.get('/new-wallet', (req, res) => {
   res.send({newWallet})
 });
 
-app.post("/send", (req, res) => {
-  const { sender, recipient, amount, signature } = req.body;
-  // handleSignature(signature)
-
-
+app.post("/send", async (req, res) => {
+  // TO-DO Remove "sender" from the req, and derive it from the public key
 
   // 1. Send a signature into this route
-  // 2. Find out the sender from the signature
-  // 3. Remove "sender" from the req
+  const { sender, recipient, amount, signature } = req.body;
+
+  // 2. Check if signature is valid
+  const isValid = await handleSignature(signature)
 
   setInitialBalance(sender);
   setInitialBalance(recipient);
 
-  if (balances[sender] < amount) {
+  // 3. If transaction is signed, send it.
+  if (!isValid) {
+    res.status(400).send({ message: "Incorrect private key" });
+  } else if (balances[sender] < amount)  {
     res.status(400).send({ message: "Not enough funds!" });
   } else {
     balances[sender] -= amount;

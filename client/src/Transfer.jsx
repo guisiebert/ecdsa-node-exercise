@@ -32,40 +32,27 @@ function Transfer({ address, setBalance, privateKey, setPrivateKey}) {
     const message = "who care what the message is man"
     const messageHash =  toHex(keccak256(utf8ToBytes(message))) // hex string
     const publicKey =  toHex(secp256k1.getPublicKey(privKey)) // hex string
-    const signature =  toHex(secp256k1.sign(messageHash, privKey))
+    const signature =  secp256k1.sign(messageHash, privKey)
 
     const signatureObjecto = {
-      // signature: JSON.parse(JSON.stringify(signature, (key, value) => typeof value === 'bigint' ? value.toString() : value)),
-      // signature: signature,
+      signature: JSON.parse(JSON.stringify(signature, (key, value) => typeof value === 'bigint' ? value.toString() : value)),
       messageHash,
       publicKey
     }
 
-    
     return signatureObjecto
   }
   
   async function transfer(evt) {
     evt.preventDefault();
     
-    
     try {
-      // const signature = await signTransaction()
-      // console.log(signature)
 
       const { data: { balance }, } = await server.post(`send`, {
         sender: loggedAddress,
         amount: parseInt(sendAmount),
         recipient,
-
-        // signature: "oi"
-        // signature: signature,
-
-        // signature: JSON.parse(JSON.stringify(signature.signature, (key, value) => typeof value === 'bigint' ? value.toString() : value)),
-        
-        // messageHash: signature.messageHash,
-        // publicKey: signature.publicKey
-        // signature: signTransaction(),
+        signature: await signTransaction(),
       });
 
       setBalance(balance);

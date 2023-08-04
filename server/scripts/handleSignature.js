@@ -4,9 +4,14 @@ const { keccak256 } = require('ethereum-cryptography/keccak');
 
 
 async function handleSignature({signature, messageHash, publicKey}) {
+    const parsedSignature = new secp256k1.Signature(
+        BigInt(signature.r),
+        BigInt(signature.s),
+        parseInt(signature.recovery)
+    )
     
-    // const isSigned = secp256k1.verify(signature, messageHash, publicKey)
-    // console.log(signature)
+    const isSigned = secp256k1.verify(parsedSignature, messageHash, publicKey)
+    return isSigned
 } 
 
 module.exports = {handleSignature}
